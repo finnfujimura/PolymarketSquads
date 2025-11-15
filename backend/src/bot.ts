@@ -7,7 +7,7 @@ dotenv.config();
 const POLYMARKET_API_KEY = process.env.POLYMARKET_ADMIN_API_KEY;
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change_in_production';
-const POLL_INTERVAL = 15000; // 15 seconds
+const POLL_INTERVAL = 7000; // 7 seconds
 
 interface PolymarketActivity {
   timestamp: number;
@@ -51,7 +51,7 @@ function initSocket() {
 // Fetch activities from Polymarket API
 async function fetchUserActivities(polymarketUserAddress: string): Promise<PolymarketActivity[]> {
   try {
-    const url = `https://gamma-api.polymarket.com/activity?user=${polymarketUserAddress}&type=TRADE&type=REDEEM&limit=5`;
+    const url = `https://data-api.polymarket.com/activity?user=${polymarketUserAddress}&type=TRADE&limit=5`;
     
     const response = await fetch(url, {
       headers: {
@@ -83,10 +83,11 @@ function formatMessage(activity: PolymarketActivity, username: string): string {
     : 'redeems';
 
   const amount = `$${activity.usdcSize.toFixed(2)}`;
+  const pricePercent = `${(activity.price * 100).toFixed(0)}¢`;
   
   const link = `<a href="https://polymarket.com/event/${activity.slug}" target="_blank" class="text-blue-600 dark:text-blue-400 underline">${activity.title}</a>`;
 
-  return `${emoji} <strong>${username}</strong> ${action} ${amount} on ${activity.outcome} in ${link}`;
+  return `${emoji} <strong>${username}</strong> ${action} ${amount} on ${activity.outcome} at ${pricePercent} in ${link}`;
 }
 
 // Process activities for a single user
@@ -94,10 +95,15 @@ async function processUser(user: any) {
   try {
     const { polymarketUserAddress, evmAddress, username } = user;
 
+    console.log(`  👤 Processing user: ${username} (${polymarketUserAddress})`);
+
     // Fetch recent activities
     const activities = await fetchUserActivities(polymarketUserAddress);
 
+    console.log(`  📊 Found ${activities.length} activities`);
+
     if (activities.length === 0) {
+      console.log(`  ⚠️  No activities found for ${username}`);
       return;
     }
 
@@ -108,90 +114,120 @@ async function processUser(user: any) {
       .eq('polymarketUserAddress', polymarketUserAddress)
       .single();
 
-    // Process each activity (newest first)
-    for (const activity of activities) {
-      // Skip if we've already seen this transaction
-      if (botState && botState.lastSeenHash === activity.transactionHash) {
-        continue;
-      }
-
-      // Rate limiting: Check if we posted for this user in the last 15 seconds
-      if (botState && botState.lastPostTimestamp) {
-        const timeSinceLastPost = Date.now() - new Date(botState.lastPostTimestamp).getTime();
-        if (timeSinceLastPost < 15000) {
-          console.log(`⏱️  Rate limit: Skipping ${username} (last post was ${Math.round(timeSinceLastPost / 1000)}s ago)`);
-          continue;
-        }
-      }
-
-      // Find which squad(s) this user is in
-      const { data: memberships, error: memberError } = await supabase
-        .from('squad_members')
-        .select('squadId')
-        .eq('userId', evmAddress);
-
-      if (memberError || !memberships || memberships.length === 0) {
-        console.log(`No squads found for user ${username}`);
-        continue;
-      }
-
-      // Format the message
-      const messageContent = formatMessage(activity, username || 'A trader');
-
-      // Post to all squads this user is in
-      for (const membership of memberships) {
-        const squadId = membership.squadId;
-
-        // Save to database
-        const { error: saveError } = await supabase
-          .from('chat_messages')
-          .insert({
-            squadId,
-            authorAddress: null, // Bot messages have null author
-            content: messageContent,
-            isBot: true,
-          });
-
-        if (saveError) {
-          console.error(`Failed to save bot message for squad ${squadId}:`, saveError);
-          continue;
-        }
-
-        // Trigger retention (non-blocking, fire and forget)
-        supabase.rpc('delete_old_messages', { squad_id: squadId });
-
-        // Broadcast via Socket.IO
-        if (socket && socket.connected) {
-          const chatMessage = {
-            id: Date.now().toString(),
-            squadId: squadId.toString(),
-            author: {
-              evmAddress: 'bot',
-              username: 'Bot',
-              avatarUrl: 'https://api.dicebear.com/9.x/pixel-art/svg?seed=bot',
-            },
-            content: messageContent,
-            isBot: true,
-            timestamp: new Date().toISOString(),
-          };
-
-          socket.emit('chat:send', { squadId: squadId.toString(), content: messageContent });
-          console.log(`🤖 Posted bot message to squad ${squadId}: ${activity.type} by ${username}`);
-        }
-      }
-
-      // Update bot state with this transaction
-      await supabase
-        .from('bot_state')
-        .upsert({
-          polymarketUserAddress,
-          lastSeenHash: activity.transactionHash,
-          lastPostTimestamp: new Date().toISOString(),
-        });
-
-      // Only process the most recent new activity per user per cycle
-      break;
+    // Get the newest activity
+    const newestActivity = activities[0];
+    
+    console.log(`  🆕 Newest activity: ${newestActivity.transactionHash}`);
+    console.log(`  💾 Last seen hash: ${botState?.lastSeenHash || 'none'}`);
+    
+    // Skip if we've already seen this transaction
+    if (botState && botState.lastSeenHash === newestActivity.transactionHash) {
+      console.log(`  ✅ Already processed this transaction, skipping`);
+      return;
     }
+
+    console.log(`  🆕 New transaction detected!`);
+
+    // Rate limiting: Check if we posted for this user in the last 7 seconds
+    if (botState && botState.lastPostTimestamp) {
+      const timeSinceLastPost = Date.now() - new Date(botState.lastPostTimestamp).getTime();
+      console.log(`  ⏱️  Time since last post: ${Math.round(timeSinceLastPost / 1000)}s`);
+      if (timeSinceLastPost < 5000) {
+        console.log(`  ⏱️  Rate limit: Skipping ${username} (last post was ${Math.round(timeSinceLastPost / 1000)}s ago)`);
+        // Update lastSeenHash so we don't keep checking this trade
+        await supabase
+          .from('bot_state')
+          .upsert({
+            polymarketUserAddress,
+            lastSeenHash: newestActivity.transactionHash,
+            lastPostTimestamp: botState.lastPostTimestamp,
+          });
+        return;
+      }
+    }
+
+    console.log(`  ✅ Passed rate limit check`);
+
+    // Process the newest activity only
+    const activity = newestActivity;
+
+    console.log(`  🔍 Looking up squads for user ${evmAddress}...`);
+
+    // Find which squad(s) this user is in
+    const { data: memberships, error: memberError } = await supabase
+      .from('squad_members')
+      .select('squadId')
+      .eq('userId', evmAddress);
+
+    console.log(`  📋 Found ${memberships?.length || 0} squad memberships`);
+
+    if (memberError) {
+      console.error(`  ❌ Error fetching memberships:`, memberError);
+      return;
+    }
+
+    if (!memberships || memberships.length === 0) {
+      console.log(`  ⚠️  No squads found for user ${username}`);
+      return;
+    }
+
+    console.log(`  💬 Preparing to post to ${memberships.length} squad(s)...`);
+
+    // Format the message
+    const messageContent = formatMessage(activity, username || 'A trader');
+
+    // Post to all squads this user is in
+    for (const membership of memberships) {
+      const squadId = membership.squadId;
+
+      // Save to database
+      const { data: message, error: saveError } = await supabase
+        .from('chat_messages')
+        .insert({
+          squadId,
+          authorAddress: null, // Bot messages have null author
+          content: messageContent,
+          isBot: true,
+        })
+        .select()
+        .single();
+
+      if (saveError || !message) {
+        console.error(`Failed to save bot message for squad ${squadId}:`, saveError);
+        continue;
+      }
+
+      // Trigger retention (non-blocking, fire and forget)
+      supabase.rpc('delete_old_messages', { squad_id: squadId });
+
+      // Broadcast via Socket.IO using bot:broadcast event
+      if (socket && socket.connected) {
+        const chatMessage = {
+          id: message.id.toString(),
+          squadId: squadId.toString(),
+          author: {
+            evmAddress: 'bot',
+            username: 'Bot',
+            avatarUrl: 'https://api.dicebear.com/9.x/pixel-art/svg?seed=bot',
+          },
+          content: messageContent,
+          isBot: true,
+          timestamp: message.timestamp,
+        };
+
+        socket.emit('bot:broadcast', chatMessage);
+        console.log(`🤖 Posted bot message to squad ${squadId}: ${activity.type} by ${username}`);
+      }
+    }
+
+    // Update bot state with this transaction
+    await supabase
+      .from('bot_state')
+      .upsert({
+        polymarketUserAddress,
+        lastSeenHash: activity.transactionHash,
+        lastPostTimestamp: new Date().toISOString(),
+      });
   } catch (error) {
     console.error(`Error processing user ${user.username}:`, error);
   }

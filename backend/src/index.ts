@@ -105,6 +105,23 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Handle bot broadcasts (bypass membership check for bot user)
+  socket.on('bot:broadcast', (message: any) => {
+    try {
+      // Only allow bot user to use this
+      if (userId !== '0xBOT0000000000000000000000000000000000000') {
+        socket.emit('error', { message: 'Unauthorized' });
+        return;
+      }
+
+      const { squadId } = message;
+      io.to(`squad:${squadId}`).emit('chat:receive', message);
+      console.log(`🤖 Bot broadcast to squad ${squadId}`);
+    } catch (error) {
+      console.error('Bot broadcast error:', error);
+    }
+  });
+
   // Handle chat messages
   socket.on('chat:send', async (data: { squadId: string; content: string }) => {
     try {
