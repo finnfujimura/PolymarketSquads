@@ -45,7 +45,7 @@ export default function Home() {
         <div className="max-w-xl w-full space-y-6">
           <div className="text-center">
             <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-purple-400 to-blue-500 bg-clip-text text-transparent">
-              Social Squads
+              Polymarket Squads
             </h1>
             <p className="text-[#9ca3af]">Group trading, leaderboards & live chat</p>
           </div>
@@ -84,13 +84,13 @@ export default function Home() {
       <div className="max-w-md w-full space-y-6">
         <div className="text-center">
           <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-purple-400 to-blue-500 bg-clip-text text-transparent">
-            Social Squads
+            Polymarket Squads
           </h1>
           <p className="text-[#9ca3af]">Group trading, leaderboards & live chat</p>
         </div>
 
         <div className="bg-[#1a1a2e] border border-[#2d2d44] rounded-xl p-6">
-          <h2 className="text-xl font-bold mb-6">Demo Login</h2>
+          <h2 className="text-xl font-bold mb-6">Login</h2>
           
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
@@ -119,26 +119,6 @@ export default function Home() {
               {loading ? 'Logging in...' : 'Enter App'}
             </button>
           </form>
-
-          <div className="mt-6 pt-6 border-t border-[#2d2d44]">
-            <p className="text-xs text-[#9ca3af] mb-3">Quick Demo</p>
-            <div className="space-y-2 text-xs">
-              {[
-                ['0x1234567890123456789012345678901234567890', 'Alex'],
-                ['0xABCDEF1234567890ABCDEF1234567890ABCDEF12', 'Steve'],
-                ['0x9876543210987654321098765432109876543210', 'Jordan']
-              ].map(([addr, name]) => (
-                <button
-                  key={addr}
-                  type="button"
-                  onClick={() => setPolymarketAddress(addr)}
-                  className="w-full text-left px-3 py-2 bg-[#0f0f23] hover:bg-[#252541] rounded-lg transition-colors font-mono"
-                >
-                  {name}: {addr.slice(0, 6)}...{addr.slice(-4)}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </div>

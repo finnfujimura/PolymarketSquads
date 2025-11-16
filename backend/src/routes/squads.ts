@@ -140,12 +140,15 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res) => {
 router.post('/create', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { name } = req.body;
+    console.log('🆕 Creating squad:', { name, userId: req.userId });
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
+      console.log('❌ Invalid squad name');
       return res.status(400).json({ message: 'Squad name is required' });
     }
 
     const inviteCode = generateInviteCode();
+    console.log('🎫 Generated invite code:', inviteCode);
 
     // Create squad
     const { data: squad, error: squadError } = await supabase
@@ -158,8 +161,11 @@ router.post('/create', authMiddleware, async (req: AuthRequest, res) => {
       .single();
 
     if (squadError) {
+      console.log('❌ Squad creation error:', squadError);
       throw squadError;
     }
+
+    console.log('✅ Squad created:', squad.id);
 
     // Add creator as first member
     const { error: memberError } = await supabase
@@ -170,14 +176,18 @@ router.post('/create', authMiddleware, async (req: AuthRequest, res) => {
       });
 
     if (memberError) {
+      console.log('❌ Member insert error:', memberError);
       throw memberError;
     }
 
+    console.log('✅ Creator added as member');
+
     const fullSquad = await getSquadWithMembers(squad.id);
+    console.log('✅ Squad creation complete:', fullSquad?.name);
 
     res.json({ squad: fullSquad });
   } catch (error) {
-    console.error('Create squad error:', error);
+    console.error('❌ Create squad error:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });

@@ -68,8 +68,8 @@ io.use(async (socket, next) => {
       return next(new Error('Authentication error: Missing token'));
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as { evmAddress: string };
-    socket.data.userId = decoded.evmAddress;
+    const decoded = jwt.verify(token, JWT_SECRET) as { polymarketUserAddress: string };
+    socket.data.userId = decoded.polymarketUserAddress;
     next();
   } catch (error) {
     next(new Error('Authentication error: Invalid token'));
