@@ -119,6 +119,10 @@ io.on('connection', (socket) => {
       // The bot has already saved the message to the database,
       // so we just need to broadcast it to the squad room
       io.to(`squad:${squadId}`).emit('chat:receive', message);
+      
+      // Trigger leaderboard refresh for live updates
+      io.to(`squad:${squadId}`).emit('leaderboard:refresh');
+      
       console.log(`🤖 Bot broadcast to squad ${squadId}`);
     } catch (error) {
       console.error('Bot broadcast error:', error);

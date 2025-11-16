@@ -46,19 +46,7 @@ CREATE TABLE IF NOT EXISTS bot_state (
     "lastPostTimestamp" TIMESTAMPTZ
 );
 
--- 6. SQUAD_WINNERS TABLE
--- Stores the weekly MVP for prize claims.
-CREATE TABLE IF NOT EXISTS squad_winners (
-    "id" SERIAL PRIMARY KEY,
-    "squadId" INT REFERENCES squads("id") ON DELETE CASCADE,
-    "winnerAddress" TEXT REFERENCES users("evmAddress") ON DELETE SET NULL,
-    "week" INT NOT NULL, -- e.g., 42 (for 42nd week of the year)
-    "pnl" FLOAT NOT NULL,
-    "createdAt" TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE("squadId", "week")
-);
-
--- 7. (OPTIONAL) RETENTION FUNCTION
+-- 6. (OPTIONAL) RETENTION FUNCTION
 -- A database function to automatically delete old messages.
 -- You can call this from your backend after inserting a new message.
 CREATE OR REPLACE FUNCTION delete_old_messages(squad_id INT)

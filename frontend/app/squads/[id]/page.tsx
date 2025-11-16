@@ -109,6 +109,11 @@ export default function SquadChatPage() {
       setMessages((prev) => [...prev, message])
     })
 
+    socket.on('leaderboard:refresh', () => {
+      console.log('🔄 Leaderboard refresh triggered by bot')
+      loadLeaderboard()
+    })
+
     socket.on('error', (error: { message: string }) => {
       console.error('Socket error:', error)
       alert(error.message)
@@ -157,27 +162,13 @@ export default function SquadChatPage() {
     }
   }
 
-  const handleCalculateWinner = async () => {
-    if (!token) return
-    
-    setLoadingLeaderboard(true)
-    try {
-      await api.calculateWinner(token, squadId)
-      // Winner message will appear in chat via bot:broadcast
-      // Reload leaderboard to show updated state
-      await loadLeaderboard()
-    } catch (err: any) {
-      console.error('Failed to calculate winner:', err)
-      alert(err.message || 'Failed to calculate winner')
-    } finally {
-      setLoadingLeaderboard(false)
-    }
-  }
-
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Loading chat...</p>
+      <div className="min-h-screen bg-[#0f0f23] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-[#7c3aed] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-[#9ca3af]">Loading chat...</p>
+        </div>
       </div>
     )
   }
@@ -187,49 +178,41 @@ export default function SquadChatPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen flex flex-col bg-[#0f0f23]">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex-shrink-0">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+      <div className="bg-[#1a1a2e] border-b border-[#2d2d44] p-4 flex-shrink-0">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link
-              href="/squads"
-              className="text-blue-600 hover:text-blue-700"
-            >
-              ← Back
+            <Link href="/squads" className="text-[#7c3aed] hover:text-[#8b5cf6] flex items-center gap-1">
+              <span>←</span> Squads
             </Link>
+            <div className="h-6 w-px bg-[#2d2d44]"></div>
             <div>
-              <h1 className="text-xl font-bold">{squad.name}</h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {squad.members.length} member{squad.members.length !== 1 ? 's' : ''}
-              </p>
+              <h1 className="text-lg font-bold text-[#e5e5f0]">{squad.name}</h1>
+              <p className="text-xs text-[#9ca3af]">{squad.members.length} members</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => loadLeaderboard()}
               disabled={loadingLeaderboard}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 text-sm font-medium"
+              className="px-4 py-2 bg-gradient-to-r from-[#7c3aed] to-[#3b82f6] rounded-lg hover:opacity-90 disabled:opacity-50 text-sm font-medium text-white"
             >
               {loadingLeaderboard ? 'Loading...' : '🏆 Leaderboard'}
             </button>
-            <div className={`flex items-center gap-2 text-sm ${connected ? 'text-green-600' : 'text-red-600'}`}>
-              <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-600' : 'bg-red-600'}`}></span>
-              Bot: {connected ? 'Online' : 'Offline'}
-            </div>
             <div className="flex -space-x-2">
               {squad.members.slice(0, 3).map((member) => (
                 <img
                   key={member.evmAddress}
                   src={member.avatarUrl}
                   alt={member.username}
-                  className="w-8 h-8 rounded-full border-2 border-white dark:border-gray-800"
+                  className="w-8 h-8 rounded-full border-2 border-[#1a1a2e] ring-1 ring-[#7c3aed]/30"
                   title={member.username}
                 />
               ))}
               {squad.members.length > 3 && (
-                <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 border-2 border-white dark:border-gray-800 flex items-center justify-center text-xs">
+                <div className="w-8 h-8 rounded-full bg-[#252541] border-2 border-[#1a1a2e] flex items-center justify-center text-[10px] text-[#9ca3af]">
                   +{squad.members.length - 3}
                 </div>
               )}
@@ -239,12 +222,13 @@ export default function SquadChatPage() {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-4xl mx-auto space-y-4">
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="max-w-5xl mx-auto space-y-3">
           {messages.length === 0 ? (
-            <div className="text-center text-gray-500 py-12">
-              <p className="text-lg mb-2">No messages yet</p>
-              <p className="text-sm">Be the first to say something!</p>
+            <div className="text-center text-[#9ca3af] py-16">
+              <div className="mb-3 text-4xl">💬</div>
+              <p className="text-base font-medium text-[#e5e5f0] mb-1">No messages yet</p>
+              <p className="text-sm">Start the conversation!</p>
             </div>
           ) : (
             messages.map((msg) => {
@@ -259,29 +243,29 @@ export default function SquadChatPage() {
                     <img
                       src={msg.author.avatarUrl}
                       alt={msg.author.username}
-                      className="w-10 h-10 rounded-full flex-shrink-0"
+                      className="w-9 h-9 rounded-full flex-shrink-0 ring-2 ring-[#7c3aed]/20"
                     />
                   )}
                   <div className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'} max-w-[70%]`}>
-                    <div className="flex items-baseline gap-2 mb-1 px-1">
-                      <span className="font-semibold text-xs text-gray-600 dark:text-gray-400">
-                        {msg.isBot ? '🤖 Bot' : msg.author?.username || 'Anonymous'}
+                    <div className="flex items-baseline gap-2 mb-1 px-2">
+                      <span className="font-medium text-xs text-[#9ca3af]">
+                        {msg.isBot ? '🤖 Trading Bot' : msg.author?.username || 'Anonymous'}
                       </span>
-                      <span className="text-xs text-gray-500">
-                        {new Date(msg.timestamp).toLocaleTimeString()}
+                      <span className="text-[10px] text-[#6b7280]">
+                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
                     <div
-                      className={`px-4 py-2 rounded-2xl ${
+                      className={`px-4 py-2.5 rounded-xl ${
                         msg.isBot
-                          ? 'bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700'
+                          ? 'bg-gradient-to-br from-[#7c3aed]/20 to-[#3b82f6]/20 border border-[#7c3aed]/30'
                           : isOwnMessage
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-200 dark:bg-gray-700'
+                          ? 'bg-gradient-to-r from-[#7c3aed] to-[#3b82f6] text-white'
+                          : 'bg-[#1a1a2e] border border-[#2d2d44]'
                       }`}
                     >
                       <div
-                        className="text-sm break-words"
+                        className={`text-sm break-words ${msg.isBot || !isOwnMessage ? 'text-[#e5e5f0]' : ''}`}
                         dangerouslySetInnerHTML={{ __html: msg.content }}
                       />
                     </div>
@@ -295,20 +279,20 @@ export default function SquadChatPage() {
       </div>
 
       {/* Input */}
-      <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 flex-shrink-0">
-        <form onSubmit={handleSendMessage} className="max-w-4xl mx-auto flex gap-2">
+      <div className="bg-[#1a1a2e] border-t border-[#2d2d44] p-4 flex-shrink-0">
+        <form onSubmit={handleSendMessage} className="max-w-5xl mx-auto flex gap-3">
           <input
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder={connected ? 'Type a message...' : 'Connecting...'}
             disabled={!connected || sending}
-            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+            className="flex-1 px-4 py-3 bg-[#0f0f23] border border-[#2d2d44] rounded-lg text-[#e5e5f0] placeholder:text-[#6b7280] focus:border-[#7c3aed] focus:outline-none disabled:opacity-50"
           />
           <button
             type="submit"
             disabled={!connected || !newMessage.trim() || sending}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            className="px-8 py-3 bg-gradient-to-r from-[#7c3aed] to-[#3b82f6] text-white rounded-lg hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
           >
             Send
           </button>
@@ -318,55 +302,69 @@ export default function SquadChatPage() {
       {/* Leaderboard Modal */}
       {showLeaderboard && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
           onClick={() => setShowLeaderboard(false)}
         >
           <div
-            className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full shadow-xl"
+            className="bg-[#1a1a2e] border border-[#2d2d44] rounded-xl p-6 max-w-lg w-full shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold">🏆 Live PnL Leaderboard</h2>
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-2xl font-bold text-[#e5e5f0]">🏆 Live Leaderboard</h2>
               <button
                 onClick={() => setShowLeaderboard(false)}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                className="text-[#9ca3af] hover:text-[#e5e5f0] text-xl"
               >
                 ✕
               </button>
             </div>
             
-            <div className="space-y-2 mb-4">
+            <div className="space-y-2.5 mb-5">
               {leaderboard.map((entry, index) => (
                 <div
                   key={entry.evmAddress}
-                  className={`flex items-center gap-3 p-3 rounded-lg ${
+                  className={`flex items-center gap-3 p-4 rounded-xl transition ${
                     index === 0
-                      ? 'bg-yellow-100 dark:bg-yellow-900/30 border-2 border-yellow-400'
-                      : 'bg-gray-100 dark:bg-gray-700'
+                      ? 'bg-gradient-to-r from-[#f59e0b]/20 to-[#f97316]/20 border border-[#f59e0b]/30'
+                      : 'bg-[#0f0f23] border border-[#2d2d44] hover:border-[#7c3aed]/30'
                   }`}
                 >
-                  <div className="text-2xl font-bold w-8 text-center">
-                    {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}`}
+                  <div className="text-xl font-bold w-7 text-center">
+                    {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : <span className="text-[#6b7280] text-sm">{index + 1}</span>}
                   </div>
                   <img
                     src={entry.avatarUrl}
                     alt={entry.username}
-                    className="w-10 h-10 rounded-full"
+                    className="w-11 h-11 rounded-full ring-2 ring-[#7c3aed]/30"
                   />
-                  <div className="flex-1">
-                    <p className="font-medium">{entry.username}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-[#e5e5f0]">{entry.username}</p>
                     {entry.topPosition && (
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                        🔥 Best: {entry.topPosition.outcome} in {entry.topPosition.title.substring(0, 30)}{entry.topPosition.title.length > 30 ? '...' : ''} (+${entry.topPosition.cashPnl})
+                      <p className="text-[10px] text-[#9ca3af] mt-1 leading-tight">
+                        🔥 Best: {entry.topPosition.outcome} in{' '}
+                        {entry.topPosition.slug ? (
+                          <a
+                            href={`https://polymarket.com/event/${entry.topPosition.slug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#7c3aed] hover:text-[#8b5cf6] underline"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {entry.topPosition.title.substring(0, 30)}{entry.topPosition.title.length > 30 ? '...' : ''}
+                          </a>
+                        ) : (
+                          <span>{entry.topPosition.title.substring(0, 30)}{entry.topPosition.title.length > 30 ? '...' : ''}</span>
+                        )}
+                        {' '}(+${entry.topPosition.cashPnl})
                       </p>
                     )}
                   </div>
-                  <div className={`font-bold text-lg ${
+                  <div className={`font-bold text-base ${
                     entry.totalLivePnl > 0
-                      ? 'text-green-600'
+                      ? 'text-[#10b981]'
                       : entry.totalLivePnl < 0
-                      ? 'text-red-600'
-                      : 'text-gray-600'
+                      ? 'text-[#ef4444]'
+                      : 'text-[#9ca3af]'
                   }`}>
                     {entry.totalLivePnl > 0 ? '+' : ''}${entry.totalLivePnl.toFixed(2)}
                   </div>
@@ -374,21 +372,12 @@ export default function SquadChatPage() {
               ))}
             </div>
 
-            <div className="flex gap-2">
-              <button
-                onClick={() => loadLeaderboard()}
-                disabled={loadingLeaderboard}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-              >
-                {loadingLeaderboard ? 'Refreshing...' : '🔄 Refresh'}
-              </button>
-              <button
-                onClick={() => setShowLeaderboard(false)}
-                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"
-              >
-                Close
-              </button>
-            </div>
+            <button
+              onClick={() => setShowLeaderboard(false)}
+              className="w-full px-4 py-3 bg-[#0f0f23] border border-[#2d2d44] rounded-lg hover:bg-[#252541] text-[#e5e5f0] font-medium"
+            >
+              Close
+            </button>
           </div>
         </div>
       )}

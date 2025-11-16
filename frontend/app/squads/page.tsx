@@ -105,35 +105,32 @@ export default function SquadsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Loading squads...</p>
+      <div className="min-h-screen bg-[#0f0f23] flex items-center justify-center">
+        <p className="text-[#9ca3af]">Loading squads...</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen p-8">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="min-h-screen bg-[#0f0f23] text-[#e5e5f0] p-6">
+      <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <Link
-              href="/"
-              className="text-blue-600 hover:text-blue-700 text-sm"
-            >
-              ← Back to Home
+            <Link href="/" className="text-[#7c3aed] hover:text-[#8b5cf6] text-sm flex items-center gap-2">
+              <span>←</span> Home
             </Link>
             <h1 className="text-3xl font-bold mt-2">My Squads</h1>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <button
               onClick={() => setShowCreateModal(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              className="px-5 py-2.5 bg-gradient-to-r from-[#7c3aed] to-[#3b82f6] rounded-lg hover:opacity-90 transition-opacity font-medium"
             >
-              Create Squad
+              + Create Squad
             </button>
             <button
               onClick={() => setShowJoinModal(true)}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+              className="px-5 py-2.5 bg-[#1a1a2e] border border-[#2d2d44] rounded-lg hover:bg-[#252541] hover:border-[#7c3aed] transition-all font-medium"
             >
               Join Squad
             </button>
@@ -141,13 +138,10 @@ export default function SquadsPage() {
         </div>
 
         {squads.length === 0 ? (
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-12 text-center">
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              You haven't joined any squads yet
-            </p>
-            <p className="text-sm text-gray-500">
-              Create a new squad or join an existing one using an invite code
-            </p>
+          <div className="bg-[#1a1a2e] border border-[#2d2d44] rounded-xl p-12 text-center">
+            <div className="text-6xl mb-4">🏆</div>
+            <p className="text-[#9ca3af] mb-2">No squads yet</p>
+            <p className="text-sm text-[#6b7280]">Create or join a squad to start trading together</p>
           </div>
         ) : (
           <div className="grid gap-4">
@@ -155,21 +149,19 @@ export default function SquadsPage() {
               <Link
                 key={squad.id}
                 href={`/squads/${squad.id}`}
-                className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow hover:shadow-lg transition"
+                className="bg-[#1a1a2e] border border-[#2d2d44] rounded-xl p-6 hover:bg-[#252541] hover:border-[#7c3aed] transition-all group"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h3 className="text-xl font-semibold mb-2">{squad.name}</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {squad.members.length} member{squad.members.length !== 1 ? 's' : ''}
-                    </p>
+                    <h3 className="text-xl font-semibold mb-1 group-hover:text-[#7c3aed] transition-colors">{squad.name}</h3>
+                    <p className="text-sm text-[#9ca3af]">{squad.members.length} member{squad.members.length !== 1 ? 's' : ''}</p>
                   </div>
                   <button
                     onClick={(e) => {
                       e.preventDefault()
                       copyInviteCode(squad.inviteCode)
                     }}
-                    className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+                    className="px-3 py-1.5 bg-[#0f0f23] border border-[#2d2d44] rounded-lg hover:border-[#7c3aed] transition-colors text-sm font-mono"
                   >
                     📋 {squad.inviteCode}
                   </button>
@@ -181,12 +173,12 @@ export default function SquadsPage() {
                       key={member.evmAddress}
                       src={member.avatarUrl}
                       alt={member.username}
-                      className="w-10 h-10 rounded-full border-2 border-white dark:border-gray-800"
+                      className="w-10 h-10 rounded-full border-2 border-[#1a1a2e] ring-1 ring-[#2d2d44]"
                       title={member.username}
                     />
                   ))}
                   {squad.members.length > 5 && (
-                    <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 border-2 border-white dark:border-gray-800 flex items-center justify-center text-xs">
+                    <div className="w-10 h-10 rounded-full bg-[#0f0f23] border-2 border-[#1a1a2e] ring-1 ring-[#2d2d44] flex items-center justify-center text-xs text-[#9ca3af]">
                       +{squad.members.length - 5}
                     </div>
                   )}
@@ -198,30 +190,28 @@ export default function SquadsPage() {
 
         {/* Create Squad Modal */}
         {showCreateModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
-              <h2 className="text-2xl font-bold mb-4">Create New Squad</h2>
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={() => setShowCreateModal(false)}>
+            <div className="bg-[#1a1a2e] border border-[#2d2d44] rounded-xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+              <h2 className="text-2xl font-bold mb-6">Create Squad</h2>
               <form onSubmit={handleCreateSquad} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Squad Name
-                  </label>
+                  <label className="block text-sm font-medium mb-2 text-[#9ca3af]">Squad Name</label>
                   <input
                     type="text"
                     value={newSquadName}
                     onChange={(e) => setNewSquadName(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="e.g., The Alpha Team"
+                    className="w-full px-4 py-3 bg-[#0f0f23] border border-[#2d2d44] rounded-lg focus:border-[#7c3aed] focus:outline-none"
+                    placeholder="The Alpha Team"
                     maxLength={50}
                     required
                   />
                 </div>
 
                 {error && (
-                  <p className="text-red-600 text-sm">{error}</p>
+                  <p className="text-[#ef4444] text-sm">{error}</p>
                 )}
 
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <button
                     type="button"
                     onClick={() => {
@@ -229,14 +219,14 @@ export default function SquadsPage() {
                       setNewSquadName('')
                       setError('')
                     }}
-                    className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+                    className="flex-1 px-4 py-2.5 bg-[#0f0f23] border border-[#2d2d44] rounded-lg hover:bg-[#252541] transition"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={actionLoading}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-[#7c3aed] to-[#3b82f6] rounded-lg hover:opacity-90 transition disabled:opacity-50"
                   >
                     {actionLoading ? 'Creating...' : 'Create'}
                   </button>
@@ -248,33 +238,29 @@ export default function SquadsPage() {
 
         {/* Join Squad Modal */}
         {showJoinModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
-              <h2 className="text-2xl font-bold mb-4">Join Squad</h2>
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={() => setShowJoinModal(false)}>
+            <div className="bg-[#1a1a2e] border border-[#2d2d44] rounded-xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+              <h2 className="text-2xl font-bold mb-6">Join Squad</h2>
               <form onSubmit={handleJoinSquad} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Invite Code
-                  </label>
+                  <label className="block text-sm font-medium mb-2 text-[#9ca3af]">Invite Code</label>
                   <input
                     type="text"
                     value={inviteCode}
                     onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-green-500 focus:border-transparent font-mono text-lg text-center"
+                    className="w-full px-4 py-3 bg-[#0f0f23] border border-[#2d2d44] rounded-lg focus:border-[#7c3aed] focus:outline-none font-mono text-lg text-center tracking-wider"
                     placeholder="ABC123"
                     maxLength={6}
                     required
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Enter the 6-character invite code
-                  </p>
+                  <p className="text-xs text-[#6b7280] mt-2">6-character code from your friend</p>
                 </div>
 
                 {error && (
-                  <p className="text-red-600 text-sm">{error}</p>
+                  <p className="text-[#ef4444] text-sm">{error}</p>
                 )}
 
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <button
                     type="button"
                     onClick={() => {
@@ -282,14 +268,14 @@ export default function SquadsPage() {
                       setInviteCode('')
                       setError('')
                     }}
-                    className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+                    className="flex-1 px-4 py-2.5 bg-[#0f0f23] border border-[#2d2d44] rounded-lg hover:bg-[#252541] transition"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={actionLoading}
-                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-[#10b981] to-[#10b981] rounded-lg hover:opacity-90 transition disabled:opacity-50"
                   >
                     {actionLoading ? 'Joining...' : 'Join'}
                   </button>

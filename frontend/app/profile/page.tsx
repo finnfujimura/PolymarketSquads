@@ -73,124 +73,60 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen p-8">
-      <div className="max-w-2xl mx-auto space-y-8">
+    <div className="min-h-screen bg-[#0f0f23] text-[#e5e5f0] p-6">
+      <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <Link
-            href="/"
-            className="text-blue-600 hover:text-blue-700"
-          >
-            ← Back to Home
+          <Link href="/" className="text-[#7c3aed] hover:text-[#8b5cf6] flex items-center gap-2">
+            <span>←</span> Home
           </Link>
-          <button
-            onClick={handleLogout}
-            className="text-red-600 hover:text-red-700"
-          >
+          <button onClick={handleLogout} className="text-[#ef4444] hover:text-[#dc2626] font-medium">
             Logout
           </button>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-8 shadow-lg">
-          <div className="flex items-center gap-4 mb-8">
-            <img
-              src={user.avatarUrl}
-              alt="Avatar"
-              className="w-20 h-20 rounded-full"
-            />
+        <div className="bg-[#1a1a2e] border border-[#2d2d44] rounded-xl p-6">
+          <div className="flex items-center gap-4 mb-6">
+            <img src={user.avatarUrl} alt="Avatar" className="w-20 h-20 rounded-full ring-2 ring-[#7c3aed]"/>
             <div>
-              <h1 className="text-2xl font-bold">Your Profile</h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {user.evmAddress?.slice(0, 6)}...{user.evmAddress?.slice(-4)}
-              </p>
+              <h1 className="text-2xl font-bold">Profile Settings</h1>
+              <p className="text-sm text-[#9ca3af] font-mono">{user.evmAddress?.slice(0, 6)}...{user.evmAddress?.slice(-4)}</p>
             </div>
           </div>
 
-          {/* Wallet Verification Section */}
-          <div className="mb-8 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold">Wallet Verification</h3>
-              {walletVerified ? (
-                <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded-full text-sm font-medium">
-                  ✓ Verified
-                </span>
-              ) : (
-                <span className="px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 rounded-full text-sm font-medium">
-                  Not Verified
-                </span>
-              )}
-            </div>
-            
-            {walletVerified ? (
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                Your wallet is verified. You can claim NFT prizes!
-              </p>
-            ) : (
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                Connect your wallet to verify ownership and enable prize claims.
-              </p>
-            )}
-
-            <button
-              onClick={() => open()}
-              className={`w-full px-4 py-2 rounded-lg transition ${
-                walletVerified
-                  ? 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
-              }`}
-            >
-              {isConnected 
-                ? walletVerified 
-                  ? 'Manage Wallet' 
-                  : '⚠ Wrong Wallet Connected'
-                : 'Connect Wallet to Verify'
-              }
-            </button>
-
-            {isConnected && !walletVerified && (
-              <p className="text-xs text-red-600 dark:text-red-400 mt-2">
-                The connected wallet ({address?.slice(0, 6)}...{address?.slice(-4)}) 
-                doesn't match your login address. Please switch wallets.
-              </p>
-            )}
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium mb-2">
-                Username
-              </label>
+              <label className="block text-sm font-medium mb-2 text-[#9ca3af]">Username</label>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-[#0f0f23] border border-[#2d2d44] rounded-lg focus:border-[#7c3aed] focus:outline-none"
                 placeholder="Enter your username"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">
-                Polymarket User Address
-                <span className="text-gray-500 text-xs ml-2">(Required for bot and leaderboard)</span>
+              <label className="block text-sm font-medium mb-2 text-[#9ca3af]">
+                Polymarket Address
+                <span className="text-[#6b7280] text-xs ml-2">(Required for tracking)</span>
               </label>
               <input
                 type="text"
                 value={polymarketAddress}
                 onChange={(e) => setPolymarketAddress(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="0x... (Your public Polymarket address)"
+                className="w-full px-4 py-3 bg-[#0f0f23] border border-[#2d2d44] rounded-lg focus:border-[#7c3aed] focus:outline-none font-mono text-sm"
+                placeholder="0x..."
               />
-              <p className="text-xs text-gray-500 mt-1">
-                This is your public Polymarket address, not your wallet address. 
-                Find it on your Polymarket profile.
+              <p className="text-xs text-[#6b7280] mt-2">
+                Your public Polymarket address for trade tracking and leaderboards
               </p>
             </div>
 
             {message && (
-              <div className={`p-4 rounded-lg ${
+              <div className={`p-4 rounded-lg border ${
                 message.includes('success') 
-                  ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' 
-                  : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200'
+                  ? 'bg-[#10b981]/10 border-[#10b981]/20 text-[#10b981]' 
+                  : 'bg-[#ef4444]/10 border-[#ef4444]/20 text-[#ef4444]'
               }`}>
                 {message}
               </div>
@@ -199,18 +135,63 @@ export default function ProfilePage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-6 py-3 bg-gradient-to-r from-[#7c3aed] to-[#3b82f6] rounded-lg hover:opacity-90 transition disabled:opacity-50 font-medium"
             >
-              {loading ? 'Saving...' : 'Save Profile'}
+              {loading ? 'Saving...' : 'Save Changes'}
             </button>
           </form>
         </div>
 
-        <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-          <h2 className="font-semibold mb-2">About Your Avatar</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Your avatar is automatically generated from your wallet address using Dicebear. 
-            It will appear in squad chats and leaderboards.
+        <div className="bg-[#1a1a2e] border border-[#2d2d44] rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold">Wallet Connection</h3>
+            {walletVerified ? (
+              <span className="px-3 py-1 bg-[#10b981]/10 border border-[#10b981]/20 text-[#10b981] rounded-lg text-sm flex items-center gap-2">
+                <span className="w-2 h-2 bg-[#10b981] rounded-full"></span>
+                Verified
+              </span>
+            ) : (
+              <span className="px-3 py-1 bg-[#f59e0b]/10 border border-[#f59e0b]/20 text-[#f59e0b] rounded-lg text-sm flex items-center gap-2">
+                <span className="w-2 h-2 bg-[#f59e0b] rounded-full"></span>
+                Not Connected
+              </span>
+            )}
+          </div>
+          
+          <p className="text-sm text-[#9ca3af] mb-4">
+            {walletVerified 
+              ? 'Your wallet is verified and ready for transactions'
+              : 'Connect your wallet to enable full features'
+            }
+          </p>
+
+          <button
+            onClick={() => open()}
+            className={`w-full px-4 py-3 rounded-lg transition font-medium ${
+              walletVerified
+                ? 'bg-[#0f0f23] border border-[#2d2d44] hover:bg-[#252541]'
+                : 'bg-gradient-to-r from-[#7c3aed] to-[#3b82f6] hover:opacity-90'
+            }`}
+          >
+            {isConnected 
+              ? walletVerified 
+                ? 'Manage Wallet' 
+                : '⚠ Wrong Wallet'
+              : 'Connect Wallet'
+            }
+          </button>
+
+          {isConnected && !walletVerified && (
+            <p className="text-xs text-[#ef4444] mt-3 p-3 bg-[#ef4444]/10 border border-[#ef4444]/20 rounded-lg">
+              Connected wallet ({address?.slice(0, 6)}...{address?.slice(-4)}) doesn't match login address
+            </p>
+          )}
+        </div>
+
+        <div className="bg-[#1a1a2e]/50 border border-[#2d2d44]/50 rounded-xl p-5">
+          <h3 className="font-semibold mb-2 text-sm">About Avatars</h3>
+          <p className="text-xs text-[#9ca3af]">
+            Your avatar is generated from your wallet address and appears in chats and leaderboards
           </p>
         </div>
       </div>

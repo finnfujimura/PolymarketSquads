@@ -126,18 +126,4 @@ export const api = {
 
     return response.json();
   },
-
-  async calculateWinner(token: string, squadId: string) {
-    const response = await fetch(`${API_BASE_URL}/api/squads/${squadId}/calculate-winner`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to calculate winner');
-    }
-
-    return response.json();
-  },
 };

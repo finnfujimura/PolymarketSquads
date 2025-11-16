@@ -11,10 +11,8 @@ interface User {
 interface AuthState {
   token: string | null;
   user: User | null;
-  walletVerified: boolean;
   setAuth: (token: string, user: User) => void;
   updateUser: (user: User) => void;
-  setWalletVerified: (verified: boolean) => void;
   logout: () => void;
 }
 
@@ -23,11 +21,9 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       token: null,
       user: null,
-      walletVerified: false,
       setAuth: (token, user) => set({ token, user }),
       updateUser: (user) => set({ user }),
-      setWalletVerified: (verified) => set({ walletVerified: verified }),
-      logout: () => set({ token: null, user: null, walletVerified: false }),
+      logout: () => set({ token: null, user: null }),
     }),
     {
       name: 'auth-storage',
