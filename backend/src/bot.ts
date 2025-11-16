@@ -26,10 +26,10 @@ let socket: Socket | null = null;
 
 // Initialize Socket.IO connection to our own chat server
 function initSocket() {
-  // Create a bot token (we use a special evmAddress for the bot)
+  // Create a bot token (we use a special polymarketUserAddress for the bot)
   const botAddress = '0xBOT0000000000000000000000000000000000000';
   const jwt = require('jsonwebtoken');
-  const botToken = jwt.sign({ evmAddress: botAddress }, JWT_SECRET, { expiresIn: '7d' });
+  const botToken = jwt.sign({ polymarketUserAddress: botAddress }, JWT_SECRET, { expiresIn: '7d' });
 
   socket = io(BACKEND_URL, {
     auth: { token: botToken },
@@ -91,7 +91,7 @@ function formatMessage(activity: PolymarketActivity, username: string): string {
 // Process activities for a single user
 async function processUser(user: any) {
   try {
-    const { polymarketUserAddress, evmAddress, username } = user;
+    const { polymarketUserAddress, username } = user;
 
     console.log(`  👤 Processing user: ${username} (${polymarketUserAddress})`);
 
@@ -149,13 +149,13 @@ async function processUser(user: any) {
     // Process the newest activity only
     const activity = newestActivity;
 
-    console.log(`  🔍 Looking up squads for user ${evmAddress}...`);
+    console.log(`  🔍 Looking up squads for user ${polymarketUserAddress}...`);
 
     // Find which squad(s) this user is in
     const { data: memberships, error: memberError } = await supabase
       .from('squad_members')
       .select('squadId')
-      .eq('userId', evmAddress);
+      .eq('userId', polymarketUserAddress);
 
     console.log(`  📋 Found ${memberships?.length || 0} squad memberships`);
 
@@ -204,7 +204,7 @@ async function processUser(user: any) {
           id: message.id.toString(),
           squadId: squadId.toString(),
           author: {
-            evmAddress: 'bot',
+            polymarketUserAddress: 'bot',
             username: 'Bot',
             avatarUrl: 'https://api.dicebear.com/9.x/pixel-art/svg?seed=bot',
           },

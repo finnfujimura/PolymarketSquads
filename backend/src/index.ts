@@ -156,10 +156,11 @@ io.on('connection', (socket) => {
       const { data: user, error: userError } = await supabase
         .from('users')
         .select('*')
-        .eq('evmAddress', userId)
+        .eq('polymarketUserAddress', userId)
         .single();
 
       if (userError || !user) {
+        console.log('❌ User lookup failed:', { userId, error: userError });
         socket.emit('error', { message: 'User not found' });
         return;
       }
@@ -191,9 +192,9 @@ io.on('connection', (socket) => {
         id: message.id.toString(),
         squadId: squadId,
         author: {
-          evmAddress: user.evmAddress,
+          polymarketUserAddress: user.polymarketUserAddress,
           username: user.username || 'Anonymous',
-          avatarUrl: `https://api.dicebear.com/9.x/pixel-art/svg?seed=${user.evmAddress}`,
+          avatarUrl: `https://api.dicebear.com/9.x/pixel-art/svg?seed=${user.polymarketUserAddress}`,
         },
         content: message.content,
         isBot: false,
