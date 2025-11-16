@@ -9,19 +9,19 @@ import Link from 'next/link'
 export default function Home() {
   const router = useRouter()
   const { user, setAuth } = useAuthStore()
-  const [evmAddress, setEvmAddress] = useState('')
+  const [polymarketAddress, setPolymarketAddress] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!evmAddress.trim()) {
-      setError('Please enter an address')
+    if (!polymarketAddress.trim()) {
+      setError('Please enter a Polymarket address')
       return
     }
 
-    if (!evmAddress.startsWith('0x') || evmAddress.length !== 42) {
+    if (!polymarketAddress.startsWith('0x') || polymarketAddress.length !== 42) {
       setError('Invalid address format')
       return
     }
@@ -29,7 +29,7 @@ export default function Home() {
     try {
       setLoading(true)
       setError('')
-      const { token, user } = await api.login(evmAddress)
+      const { token, user } = await api.login(polymarketAddress)
       setAuth(token, user)
       router.push('/squads')
     } catch (err) {
@@ -55,20 +55,13 @@ export default function Home() {
               <img src={user.avatarUrl} alt="Avatar" className="w-16 h-16 rounded-full ring-2 ring-[#7c3aed]"/>
               <div>
                 <p className="font-semibold text-lg">{user.username}</p>
-                <p className="text-sm text-[#9ca3af] font-mono">{user.evmAddress?.slice(0, 6)}...{user.evmAddress?.slice(-4)}</p>
+                <p className="text-sm text-[#9ca3af] font-mono">{user.polymarketUserAddress?.slice(0, 6)}...{user.polymarketUserAddress?.slice(-4)}</p>
               </div>
             </div>
-            {user.polymarketUserAddress ? (
-              <p className="text-sm text-[#10b981] flex items-center gap-2">
-                <span className="w-2 h-2 bg-[#10b981] rounded-full"></span>
-                Polymarket linked
-              </p>
-            ) : (
-              <p className="text-sm text-[#f59e0b] flex items-center gap-2">
-                <span className="w-2 h-2 bg-[#f59e0b] rounded-full"></span>
-                Link Polymarket address in Profile
-              </p>
-            )}
+            <p className="text-sm text-[#10b981] flex items-center gap-2">
+              <span className="w-2 h-2 bg-[#10b981] rounded-full"></span>
+              Ready to trade
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -101,11 +94,11 @@ export default function Home() {
           
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2 text-[#9ca3af]">EVM Address</label>
+              <label className="block text-sm font-medium mb-2 text-[#9ca3af]">Polymarket Address</label>
               <input
                 type="text"
-                value={evmAddress}
-                onChange={(e) => setEvmAddress(e.target.value)}
+                value={polymarketAddress}
+                onChange={(e) => setPolymarketAddress(e.target.value)}
                 className="w-full px-4 py-3 bg-[#0f0f23] border border-[#2d2d44] rounded-lg focus:border-[#7c3aed] focus:outline-none font-mono text-sm"
                 placeholder="0x..."
                 disabled={loading}
@@ -138,7 +131,7 @@ export default function Home() {
                 <button
                   key={addr}
                   type="button"
-                  onClick={() => setEvmAddress(addr)}
+                  onClick={() => setPolymarketAddress(addr)}
                   className="w-full text-left px-3 py-2 bg-[#0f0f23] hover:bg-[#252541] rounded-lg transition-colors font-mono"
                 >
                   {name}: {addr.slice(0, 6)}...{addr.slice(-4)}

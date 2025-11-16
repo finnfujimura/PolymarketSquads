@@ -1,8 +1,7 @@
 -- 1. USERS TABLE
--- Stores app users, linked to their EVM wallet address and public Polymarket address.
+-- Stores app users with their Polymarket address (demo only - real app would integrate with Polymarket OAuth)
 CREATE TABLE IF NOT EXISTS users (
-    "evmAddress" TEXT PRIMARY KEY,
-    "polymarketUserAddress" TEXT,
+    "polymarketUserAddress" TEXT PRIMARY KEY,
     "username" TEXT,
     "createdAt" TIMESTAMPTZ DEFAULT NOW()
 );
@@ -19,7 +18,7 @@ CREATE TABLE IF NOT EXISTS squads (
 -- 3. SQUAD_MEMBERS TABLE
 -- A "join" table to link users to squads (many-to-many).
 CREATE TABLE IF NOT EXISTS squad_members (
-    "userId" TEXT REFERENCES users("evmAddress") ON DELETE CASCADE,
+    "userId" TEXT REFERENCES users("polymarketUserAddress") ON DELETE CASCADE,
     "squadId" INT REFERENCES squads("id") ON DELETE CASCADE,
     "joinedAt" TIMESTAMPTZ DEFAULT NOW(),
     PRIMARY KEY ("userId", "squadId")
@@ -30,7 +29,7 @@ CREATE TABLE IF NOT EXISTS squad_members (
 CREATE TABLE IF NOT EXISTS chat_messages (
     "id" SERIAL PRIMARY KEY,
     "squadId" INT REFERENCES squads("id") ON DELETE CASCADE,
-    "authorAddress" TEXT REFERENCES users("evmAddress") ON DELETE SET NULL, -- Use SET NULL so bot messages persist
+    "authorAddress" TEXT REFERENCES users("polymarketUserAddress") ON DELETE SET NULL, -- Use SET NULL so bot messages persist
     "content" TEXT NOT NULL,
     "isBot" BOOLEAN DEFAULT FALSE,
     "timestamp" TIMESTAMPTZ DEFAULT NOW()

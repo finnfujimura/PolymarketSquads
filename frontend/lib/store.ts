@@ -2,10 +2,9 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface User {
-  evmAddress: string;
+  polymarketUserAddress: string;
   username: string;
-  polymarketUserAddress?: string;
-  avatarUrl: string;
+  avatarUrl?: string;
 }
 
 interface AuthState {

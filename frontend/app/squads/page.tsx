@@ -7,9 +7,8 @@ import { api } from '@/lib/api'
 import Link from 'next/link'
 
 interface User {
-  evmAddress: string;
+  polymarketUserAddress: string;
   username: string;
-  polymarketUserAddress?: string;
   avatarUrl: string;
 }
 
@@ -170,7 +169,7 @@ export default function SquadsPage() {
                 <div className="flex -space-x-2">
                   {squad.members.slice(0, 5).map((member) => (
                     <img
-                      key={member.evmAddress}
+                      key={member.polymarketUserAddress}
                       src={member.avatarUrl}
                       alt={member.username}
                       className="w-10 h-10 rounded-full border-2 border-[#1a1a2e] ring-1 ring-[#2d2d44]"

@@ -13,7 +13,7 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
 const JWT_SECRET = process.env.JWT_SECRET!;
 const socket = socketClient(BACKEND_URL, {
   auth: {
-    token: jwt.sign({ evmAddress: '0xBOT0000000000000000000000000000000000000' }, JWT_SECRET),
+    token: jwt.sign({ polymarketUserAddress: '0xBOT0000000000000000000000000000000000000' }, JWT_SECRET),
   },
 });
 
@@ -57,7 +57,7 @@ async function getSquadWithMembers(squadId: number) {
   const { data: users, error: usersError } = await supabase
     .from('users')
     .select('*')
-    .in('evmAddress', userIds);
+    .in('polymarketUserAddress', userIds);
 
   if (usersError) {
     return null;
@@ -65,7 +65,7 @@ async function getSquadWithMembers(squadId: number) {
 
   const members = users.map(user => ({
     ...user,
-    avatarUrl: `https://api.dicebear.com/9.x/pixel-art/svg?seed=${user.evmAddress}`,
+    avatarUrl: `https://api.dicebear.com/9.x/pixel-art/svg?seed=${user.polymarketUserAddress}`,
   }));
 
   return { ...squad, members };
@@ -290,14 +290,14 @@ router.get('/:id/messages', authMiddleware, async (req: AuthRequest, res) => {
     const { data: users, error: usersError } = await supabase
       .from('users')
       .select('*')
-      .in('evmAddress', authorAddresses);
+      .in('polymarketUserAddress', authorAddresses);
 
     if (usersError) {
       throw usersError;
     }
 
     // Create user map
-    const userMap = new Map(users.map(u => [u.evmAddress, u]));
+    const userMap = new Map(users.map(u => [u.polymarketUserAddress, u]));
 
     // Format messages
     const formattedMessages = messages.map(msg => {
@@ -306,11 +306,11 @@ router.get('/:id/messages', authMiddleware, async (req: AuthRequest, res) => {
         id: msg.id.toString(),
         squadId: squadId.toString(),
         author: author ? {
-          evmAddress: author.evmAddress,
+          polymarketUserAddress: author.polymarketUserAddress,
           username: author.username || 'Anonymous',
-          avatarUrl: `https://api.dicebear.com/9.x/pixel-art/svg?seed=${author.evmAddress}`,
+          avatarUrl: `https://api.dicebear.com/9.x/pixel-art/svg?seed=${author.polymarketUserAddress}`,
         } : {
-          evmAddress: 'bot',
+          polymarketUserAddress: 'bot',
           username: 'Bot',
           avatarUrl: 'https://api.dicebear.com/9.x/pixel-art/svg?seed=bot',
         },
@@ -372,7 +372,7 @@ router.get('/:id/leaderboard', authMiddleware, async (req: AuthRequest, res) => 
     const { data: users, error: usersError } = await supabase
       .from('users')
       .select('*')
-      .in('evmAddress', userIds);
+      .in('polymarketUserAddress', userIds);
 
     if (usersError || !users) {
       return res.status(500).json({ message: 'Failed to fetch users' });
@@ -387,9 +387,9 @@ router.get('/:id/leaderboard', authMiddleware, async (req: AuthRequest, res) => 
         // If no polymarket address, return 0 PnL
         if (!user.polymarketUserAddress) {
           return {
-            evmAddress: user.evmAddress,
+            polymarketUserAddress: user.polymarketUserAddress,
             username: user.username || 'Anonymous',
-            avatarUrl: user.avatarUrl || `https://api.dicebear.com/9.x/pixel-art/svg?seed=${user.evmAddress}`,
+            avatarUrl: user.avatarUrl || `https://api.dicebear.com/9.x/pixel-art/svg?seed=${user.polymarketUserAddress}`,
             totalLivePnl: 0,
             topPosition: null,
           };
@@ -415,9 +415,9 @@ router.get('/:id/leaderboard', authMiddleware, async (req: AuthRequest, res) => 
           if (!closedResponse.ok || !openResponse.ok || !valueResponse.ok) {
             console.error(`Failed to fetch data for ${user.username}: closed=${closedResponse.status}, open=${openResponse.status}, value=${valueResponse.status}`);
             return {
-              evmAddress: user.evmAddress,
+              polymarketUserAddress: user.polymarketUserAddress,
               username: user.username || 'Anonymous',
-              avatarUrl: user.avatarUrl || `https://api.dicebear.com/9.x/pixel-art/svg?seed=${user.evmAddress}`,
+              avatarUrl: user.avatarUrl || `https://api.dicebear.com/9.x/pixel-art/svg?seed=${user.polymarketUserAddress}`,
               totalLivePnl: 0,
               topPosition: null,
             };
@@ -457,18 +457,18 @@ router.get('/:id/leaderboard', authMiddleware, async (req: AuthRequest, res) => 
           }
 
           return {
-            evmAddress: user.evmAddress,
+            polymarketUserAddress: user.polymarketUserAddress,
             username: user.username || 'Anonymous',
-            avatarUrl: user.avatarUrl || `https://api.dicebear.com/9.x/pixel-art/svg?seed=${user.evmAddress}`,
+            avatarUrl: user.avatarUrl || `https://api.dicebear.com/9.x/pixel-art/svg?seed=${user.polymarketUserAddress}`,
             totalLivePnl: parseFloat(totalLivePnl.toFixed(2)),
             topPosition,
           };
         } catch (error) {
           console.error(`Error fetching PnL for ${user.username}:`, error);
           return {
-            evmAddress: user.evmAddress,
+            polymarketUserAddress: user.polymarketUserAddress,
             username: user.username || 'Anonymous',
-            avatarUrl: user.avatarUrl || `https://api.dicebear.com/9.x/pixel-art/svg?seed=${user.evmAddress}`,
+            avatarUrl: user.avatarUrl || `https://api.dicebear.com/9.x/pixel-art/svg?seed=${user.polymarketUserAddress}`,
             totalLivePnl: 0,
             topPosition: null,
           };

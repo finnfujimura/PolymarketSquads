@@ -9,7 +9,7 @@ import { io, Socket } from 'socket.io-client'
 import Link from 'next/link'
 
 interface User {
-  evmAddress: string
+  polymarketUserAddress: string
   username: string
   avatarUrl: string
 }
@@ -201,10 +201,18 @@ export default function SquadChatPage() {
             >
               {loadingLeaderboard ? 'Loading...' : '🏆 Leaderboard'}
             </button>
+            <div className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg border ${
+              connected 
+                ? 'border-[#10b981]/20 bg-[#10b981]/10 text-[#10b981]' 
+                : 'border-[#ef4444]/20 bg-[#ef4444]/10 text-[#ef4444]'
+            }`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${connected ? 'bg-[#10b981]' : 'bg-[#ef4444]'}`}></span>
+              {connected ? 'Live' : 'Offline'}
+            </div>
             <div className="flex -space-x-2">
               {squad.members.slice(0, 3).map((member) => (
                 <img
-                  key={member.evmAddress}
+                  key={member.polymarketUserAddress}
                   src={member.avatarUrl}
                   alt={member.username}
                   className="w-8 h-8 rounded-full border-2 border-[#1a1a2e] ring-1 ring-[#7c3aed]/30"
@@ -232,7 +240,7 @@ export default function SquadChatPage() {
             </div>
           ) : (
             messages.map((msg) => {
-              const isOwnMessage = user && msg.author?.evmAddress === user.evmAddress
+              const isOwnMessage = user && msg.author?.polymarketUserAddress === user.polymarketUserAddress
               
               return (
                 <div
@@ -322,7 +330,7 @@ export default function SquadChatPage() {
             <div className="space-y-2.5 mb-5">
               {leaderboard.map((entry, index) => (
                 <div
-                  key={entry.evmAddress}
+                  key={entry.polymarketUserAddress}
                   className={`flex items-center gap-3 p-4 rounded-xl transition ${
                     index === 0
                       ? 'bg-gradient-to-r from-[#f59e0b]/20 to-[#f97316]/20 border border-[#f59e0b]/30'

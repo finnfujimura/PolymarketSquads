@@ -10,7 +10,7 @@ router.post('/login', async (req, res) => {
     const { evmAddress } = req.body;
 
     if (!evmAddress || typeof evmAddress !== 'string') {
-      return res.status(400).json({ message: 'evmAddress is required' });
+      return res.status(400).json({ message: 'Polymarket address is required' });
     }
 
     // Normalize address to lowercase
@@ -20,7 +20,7 @@ router.post('/login', async (req, res) => {
     const { data: existingUser, error: fetchError } = await supabase
       .from('users')
       .select('*')
-      .eq('evmAddress', normalizedAddress)
+      .eq('polymarketUserAddress', normalizedAddress)
       .single();
 
     let user;
@@ -40,9 +40,8 @@ router.post('/login', async (req, res) => {
       const { data: newUser, error: insertError } = await supabase
         .from('users')
         .insert({
-          evmAddress: normalizedAddress,
+          polymarketUserAddress: normalizedAddress,
           username: defaultUsername,
-          polymarketUserAddress: null,
         })
         .select()
         .single();

@@ -10,7 +10,7 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res) => {
     const { data: user, error } = await supabase
       .from('users')
       .select('*')
-      .eq('evmAddress', req.userId)
+      .eq('polymarketUserAddress', req.userId)
       .single();
 
     if (error || !user) {
@@ -20,7 +20,7 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res) => {
     // Add avatarUrl
     const userResponse = {
       ...user,
-      avatarUrl: `https://api.dicebear.com/9.x/pixel-art/svg?seed=${user.evmAddress}`,
+      avatarUrl: `https://api.dicebear.com/9.x/pixel-art/svg?seed=${user.polymarketUserAddress}`,
     };
 
     res.json({ user: userResponse });
@@ -47,7 +47,7 @@ router.post('/profile', authMiddleware, async (req: AuthRequest, res) => {
     const { data: user, error } = await supabase
       .from('users')
       .update(updates)
-      .eq('evmAddress', req.userId)
+      .eq('polymarketUserAddress', req.userId)
       .select()
       .single();
 
@@ -58,7 +58,7 @@ router.post('/profile', authMiddleware, async (req: AuthRequest, res) => {
     // Add avatarUrl
     const userResponse = {
       ...user,
-      avatarUrl: `https://api.dicebear.com/9.x/pixel-art/svg?seed=${user.evmAddress}`,
+      avatarUrl: `https://api.dicebear.com/9.x/pixel-art/svg?seed=${user.polymarketUserAddress}`,
     };
 
     res.json({ user: userResponse });

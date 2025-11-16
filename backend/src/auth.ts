@@ -17,14 +17,14 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
   const token = authHeader.substring(7);
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { evmAddress: string };
-    req.userId = decoded.evmAddress;
+    const decoded = jwt.verify(token, JWT_SECRET) as { polymarketUserAddress: string };
+    req.userId = decoded.polymarketUserAddress;
     next();
   } catch (error) {
     return res.status(401).json({ message: 'Invalid or expired token' });
   }
 };
 
-export const generateToken = (evmAddress: string): string => {
-  return jwt.sign({ evmAddress }, JWT_SECRET, { expiresIn: '7d' });
+export const generateToken = (polymarketUserAddress: string): string => {
+  return jwt.sign({ polymarketUserAddress }, JWT_SECRET, { expiresIn: '7d' });
 };
